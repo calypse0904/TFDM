@@ -1,0 +1,157 @@
+classifier_scale: 4.0
+lr_kernel_n_std: 2
+num_samples: 100
+show_progress: true
+timestep_respacing: '250'
+
+classifier_use_fp16: false
+classifier_width: 128
+classifier_depth: 2
+classifier_attention_resolutions: 32,16,8
+classifier_use_scale_shift_norm: true
+classifier_resblock_updown: true
+classifier_pool: attention
+
+clip_denoised: true
+use_ddim: false
+latex_name: RePaint
+method_name: Repaint
+image_size: 256
+#model_path: /home/yingying/project/conditional_diffusion/model_logs/ASTER30_tf/ema_0.999_250000.pt
+
+#model_path: /home/zhengxiao/project/repaint/model_logs/ASTER_ls8/ema_0.999_250000.pt
+
+model_path: /home/zhengxiao/project/repaint/model_logs/icesat2_Norway2/ema_0.999_030000.pt
+
+#DDPM
+#model_path: /home/zhengxiao/project/repaint/model_logs/DDPM/ema_0.999_250000.pt
+#TFDM
+#model_path: /home/zhengxiao/project/repaint/model_logs/shadow/ema_0.999_250000_AAA.pt
+
+#model_path: /home/zhengxiao/project/repaint/model_logs/dem/ema_0.999_250000.pt
+
+#model_path: /home/yingying/project/conditional_diffusion/model_logs/unconditional_logs/ema_0.999_250000.pt
+#model_path: /home/zhengxiao/project/repaint/model_logs/ASTER_s2/ema_0.999_500000.pt
+
+name: dem_example
+inpa_inj_sched_prev: true
+n_jobs: 1
+print_estimated_vars: true
+inpa_inj_sched_prev_cumnoise: false
+condition:
+  small_size: 85
+  large_size: 256
+  condition_flag: "sr"  # sr 三通道   tf 单通道   无条件是 uncondition
+
+model:
+    image_size: 256
+    num_channels: 256
+    num_res_blocks: 2
+    channel_mult: ""
+    learn_sigma: True #diffusion中也有使用
+    class_cond: false
+    use_checkpoint: true
+
+    attention_resolutions: "32,16,8"
+    num_heads: 4
+    num_head_channels: 64
+    num_heads_upsample: -1
+    use_scale_shift_norm: true
+    dropout: 0.0
+    resblock_updown: true
+    use_fp16: false
+    use_new_attention_order: false
+    in_channels: 1
+    out_channels: 1
+    condition_channels: 3   # 条件图像的通道数  1 or 3
+    resamp_with_conv: True
+    model_flag: 'test'
+
+diffusion:
+    diffusion_steps: 1000
+    noise_schedule: cosine
+    use_kl: false
+    predict_xstart: false
+    rescale_timesteps: false
+    rescale_learned_sigmas: false
+    timestep_respacing: "250"
+
+train:
+  batch_size: 1
+  microbatch: 1
+  lr: 0.00002
+  ema_rate: 0.999
+  log_interval: 10
+  save_interval: 10000
+  resume_checkpoint: ""
+  fp16_scale_growth: 1e-3
+  schedule_sampler: uniform
+  weight_decay: 0.0
+  lr_anneal_steps: 0
+  save_path: /home/zhengxiao/project/repaint/model_logs/model_less_channels
+
+schedule_jump_params:
+  t_T: 250
+  n_sample: 1
+  jump_length: 10
+  jump_n_sample: 10
+data:
+  return_dataloader: true #训练时设置为false，测试时设置为true
+
+  train:
+    gt_path: /home/zhengxiao/project/repaint/dataset/train/ASTER
+    refer_path: /home/yingying/project/conditional_diffusion/dataset/train/TDM
+    image_size: 256
+    deterministic: true
+    random_crop: false
+    random_flip: false
+    augment: false
+    return_dict: true
+    drop_last: true
+    batch_size: 4
+    microbatch: 4
+    offset: 0
+    max_len: 27188
+  eval:
+#    gt_path: /home/zhengxiao/project/repaint/dataset/shadow_vs_optical/shadow/aster
+#    mask_path: /home/zhengxiao/project/repaint/dataset/shadow_vs_optical/shadow/mask
+#    refer_path: /home/zhengxiao/project/repaint/dataset/shadow_vs_optical/shadow/shadow
+
+    gt_path: /home/zhengxiao/project/repaint/dataset/test/dem
+    mask_path: /home/zhengxiao/project/repaint/dataset/test/mask
+    refer_path: /home/zhengxiao/project/repaint/dataset/test/condition
+
+
+    image_size: 256
+    class_cond: false
+    deterministic: true
+    random_crop: false
+    random_flip: false
+    return_dict: true
+    drop_last: false
+    batch_size: 1
+    offset: 0
+    max_len: 5
+    paths:
+#      records: /home/zhengxiao/project/repaint/dataset/output/test_ls8/generalisation/records
+#      srs: /home/zhengxiao/project/repaint/dataset/output/test_ls8/generalisation/inpainted
+#      lrs: /home/zhengxiao/project/repaint/dataset/output/test_ls8/generalisation/gt_masked
+#      gts: /home/zhengxiao/project/repaint/dataset/output/test_ls8/generalisation/gt
+#      gt_keep_masks: /home/zhengxiao/project/repaint/dataset/output/test_ls8/generalisation/gt_keep_mask
+
+
+      records: /home/zhengxiao/project/repaint/dataset/test/output/records/
+      srs: /home/zhengxiao/project/repaint/dataset/test/output/inpainted/
+      lrs: /home/zhengxiao/project/repaint/dataset/test/output/gt_masked
+      gts: /home/zhengxiao/project/repaint/dataset/test/output/gt
+      gt_keep_masks: /home/zhengxiao/project/repaint/dataset/test/output/gt_keep_mask/
+
+#      records: /home/zhengxiao/project/repaint/dataset/shadow_vs_optical/shadow/output_shadow/generalisation/records/
+#      srs: /home/zhengxiao/project/repaint/dataset/shadow_vs_optical/shadow/output_shadow/generalisation/inpainted/
+#      lrs: /home/zhengxiao/project/repaint/dataset/shadow_vs_optical/shadow/output_shadow/generalisation/gt_masked
+#      gts: /home/zhengxiao/project/repaint/dataset/shadow_vs_optical/shadow/output_shadow/generalisation/gt
+#      gt_keep_masks: /home/zhengxiao/project/repaint/dataset/shadow_vs_optical/shadow/output_shadow/generalisation/gt_keep_mask/
+#
+
+# python test.py --conf_path confs/dem_eval.yml
+# 在test.py 95行设置 GPU 编号
